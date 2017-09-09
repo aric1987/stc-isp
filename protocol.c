@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include "protocol.h"
 
@@ -265,10 +266,10 @@ void init_msg()
 *     2.the type of the target MPU
 *     3.the version of the ISP
 *     4.current settings of the MPU
-* buf   : point to the buf used to save the message 
-*         received from the uart 
+* buf   : point to the buf used to save the message
+*         received from the uart
 * len   : the length of the message in buf
-* return: the type of the message, INFO_MSG if received 
+* return: the type of the message, INFO_MSG if received
 *         complete target infomation message, or else
 *         return NULL_MSG
 ***********************************************************
@@ -284,13 +285,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
 
     while (i < len) {
         buf_msg [rec_count_msg ++] = buf [i ++];
-        
+
         switch (rec_count_msg) {
             case 4 : {
                 if ((buf_msg[0] != target_info_head[0]) || (buf_msg[1] != target_info_head[1]) || \
                     (buf_msg[2] != target_info_head[2]) || (buf_msg[3] != target_info_head[3]) ) {
                     memset(buf_msg, 0, rec_count_msg);
-                    rec_count_msg = 0; 
+                    rec_count_msg = 0;
                 }
 
                 break;
@@ -300,13 +301,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                 k = 0;
                 for (j = 4; j < 20; j += 2) {
                     k += ((unsigned long)buf_msg[j] << 8);
-                    k += (unsigned long)buf_msg[j + 1]; 
+                    k += (unsigned long)buf_msg[j + 1];
                 }
                 k = k >> 3;
                 k = k * target_baudrate;
                 k = k / 5816;
                 if ((k%100) >= 50) {
-                    k = (k / 100) + 1;  
+                    k = (k / 100) + 1;
                 } else {
                     k = k / 100;
                 }
@@ -331,11 +332,11 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                 }
                 else if (k == 6) {
                     target_hz = 6000000;
-                } 
+                }
                 else if (k == 4) {
                     target_hz = 4000000;
                 }
- 
+
                 break;
             }
             case 23 : {
@@ -371,13 +372,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                 for (j = 0; j < (rec_count_msg -1); j ++) {
                     k += buf_msg[j];
                 }
-  
+
                 if ((unsigned char)k != buf_msg[rec_count_msg - 1]) {
                     printf("check target infomation error\n");
                     memset(buf_msg, 0, rec_count_msg);
-                    rec_count_msg = 0; 
+                    rec_count_msg = 0;
                 }
-                break;  
+                break;
             }
             case 59 : {
                 if (buf_msg[rec_count_msg - 1] != 0x16) {
@@ -392,7 +393,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
 
                     if (target_hz == 24000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_24M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_24M_1200, 3);
                                 break;
@@ -423,7 +424,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_24M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_24M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_24M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_24M_57600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_24M_57600, 3);
                                 down_baudrate = 57600;
@@ -431,13 +432,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_24M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_24M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 22118400) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_22M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_1200, 3);
                                 break;
@@ -456,7 +457,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             case 19200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_22M_19200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_19200, 3);
-                                break; 
+                                break;
                             case 38400 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_22M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_38400, 3);
@@ -467,18 +468,18 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_22M_115200, 3);
-                                memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_115200, 3); 
+                                memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_115200, 3);
                                 break;
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_22M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_22M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 16000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_16M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_16M_1200, 3);
                                 break;
@@ -511,7 +512,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_16M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_16M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_16M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_16M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_16M_38400, 3);
                                 down_baudrate = 38400;
@@ -519,13 +520,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_16M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_16M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 12000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_12M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_12M_1200, 3);
                                 break;
@@ -558,7 +559,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_12M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_12M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_12M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_12M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_12M_38400, 3);
                                 down_baudrate = 38400;
@@ -566,13 +567,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_12M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_12M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 11059200) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_11M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_1200, 3);
                                 break;
@@ -591,7 +592,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             case 19200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_11M_19200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_19200, 3);
-                                break; 
+                                break;
                             case 38400 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_11M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_38400, 3);
@@ -602,18 +603,18 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_11M_115200, 3);
-                                memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_115200, 3); 
+                                memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_115200, 3);
                                 break;
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_11M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_11M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 8000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_1200, 3);
                                 break;
@@ -632,7 +633,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             case 19200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_19200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_19200, 3);
-                                break; 
+                                break;
                             case 38400 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_38400, 3);
                                 //memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_38400, 3);
@@ -649,7 +650,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_19200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_19200, 3);
                                 down_baudrate = 19200;
@@ -657,13 +658,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_8M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_8M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 6000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_1200, 3);
                                 break;
@@ -682,7 +683,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             case 19200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_19200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_19200, 3);
-                                break; 
+                                break;
                             case 38400 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_38400, 3);
@@ -696,7 +697,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_38400, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_38400, 3);
                                 down_baudrate = 38400;
@@ -704,13 +705,13 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_6M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
                     else if (target_hz == 4000000) {
                         switch (down_baudrate) {
-                            case 1200 : 
+                            case 1200 :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_1200, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_6M_1200, 3);
                                 break;
@@ -732,7 +733,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_9600, 3);
                                 down_baudrate = 9600;
-                                break; 
+                                break;
                             case 38400 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_38400, 3);
                                 //memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_38400, 3);
@@ -749,7 +750,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                                 break;
                             case 115200 :
                                 //memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_115200, 3);
-                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_115200, 3); 
+                                //memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_115200, 3);
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_9600, 3);
                                 down_baudrate = 9600;
@@ -757,7 +758,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                             default :
                                 memcpy(&package_data_baudrate_chk[2], baudrate_chk_4M_9600, 3);
                                 memcpy(&package_data_baudrate_chg[2], baudrate_chg_4M_9600, 3);
-                                down_baudrate = 9600; 
+                                down_baudrate = 9600;
                                 break;
                         }
                     }
@@ -785,7 +786,7 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                     package_data_baudrate_chg[1] = (unsigned char)k;
 
                     printf_msg("<<<<< Received target_info:", buf_msg, rec_count_msg);
-                    printf("\ntarget_hz is %ld\n\n", target_hz);                    
+                    printf("\ntarget_hz is %ld\n\n", target_hz);
 
                     ret = INFO_MSG;
                     memcpy(target_info, buf_msg, rec_count_msg);
@@ -794,11 +795,11 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
                 break;
             }
             default : {
-                
+
                 break;
             }
-        
-        
+
+
         }
     }
 
@@ -808,12 +809,12 @@ unsigned char treat_receive_target_info_msg(unsigned char *buf, int len)
 /*
 ***********************************************************
 * treat_receive_normal_msg
-* treat the message(not target infomation) received 
+* treat the message(not target infomation) received
 * from uart
-* buf   : point to the buf used to save the message 
-*         received from the uart 
+* buf   : point to the buf used to save the message
+*         received from the uart
 * len   : the length of the message in buf
-* return: the type of the message, such as 
+* return: the type of the message, such as
 *             DATA_MSG :data message
 *             ACK_MSG  :ack message
 *             ERR_MSG  :error message
@@ -841,15 +842,15 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
                 memset(buf_msg, 0, rec_count_msg);
                 rec_count_msg = 0;
                 length = 0x06;
-            } 
-        } 
+            }
+        }
         else if (rec_count_msg == 3) { // receive flag
             if (buf_msg[rec_count_msg - 1] !=  package_recflag) {
                 memset(buf_msg, 0, rec_count_msg);
                 rec_count_msg = 0;
                 length = 0x06;
             }
-        } 
+        }
         else if (rec_count_msg == 5) { // length
             if (buf_msg[rec_count_msg - 1] <  0x06) {
                 memset(buf_msg, 0, rec_count_msg);
@@ -858,7 +859,7 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
             } else {
                 length = buf_msg[rec_count_msg - 1];
             }
-        } 
+        }
         else if (rec_count_msg == 6) { // type
             if (buf_msg[rec_count_msg - 1] != DATA_MSG && buf_msg[rec_count_msg - 1] != ACK_MSG  && \
                 buf_msg[rec_count_msg - 1] != ERR_MSG  && buf_msg[rec_count_msg - 1] != END_MSG  && \
@@ -867,13 +868,13 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
                 memset(buf_msg, 0, rec_count_msg);
                 rec_count_msg = 0;
                 length = 0x06;
-            } 
-        } 
+            }
+        }
         else if ((rec_count_msg >= 7) && (rec_count_msg < (length + 1))) { // data
             databuf_msg[rec_count_msg - 7] = buf_msg[rec_count_msg - 1];
             datalen_msg = rec_count_msg - 6;
 
-        } 
+        }
         else if ((rec_count_msg - 1)== length) { // check
             k = 0;
             for (j = 0; j < length; j ++) {
@@ -886,7 +887,7 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
                 memset(databuf_msg, 0, datalen_msg);
                 datalen_msg = 0;
                 length = 0x06;
-            } 
+            }
         }
         else if (rec_count_msg == (length + 2)) { // end
             if (buf_msg[rec_count_msg - 1] !=  package_end) {
@@ -897,10 +898,10 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
                 datalen_msg = 0;
             } else {
                 ret = buf_msg[5];
-                
+
                 printf_msg("<<<<< Receive MSG:", buf_msg, rec_count_msg);
                 printf("\n");
-                 
+
                 memset(buf_msg, 0, rec_count_msg);
                 rec_count_msg = 0;
                 length = 0x06;
@@ -909,7 +910,7 @@ unsigned char treat_receive_normal_msg(unsigned char *buf, int len)
         }
 
     }
- 
+
     return ret;
 }
 
@@ -926,14 +927,14 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
 {
     unsigned int i = 0;
     unsigned char rec_msg_type = NULL_MSG;
-    unsigned char ret = NULL_MSG;    
+    unsigned char ret = NULL_MSG;
 
     if (step_msg == NULL_STEP) {
-        rec_msg_type = treat_receive_target_info_msg(buf, len); 
+        rec_msg_type = treat_receive_target_info_msg(buf, len);
     } else {
         rec_msg_type = treat_receive_normal_msg(buf, len);
     }
-    
+
     switch  (rec_msg_type) {
     case NULL_MSG : {
 //        ret = START_MSG;
@@ -943,13 +944,13 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
         if (step_msg == NULL_STEP) {
             step_msg = INFO_STEP;
             // send check burdrate package
-            ret = CHKB_MSG;  
+            ret = CHKB_MSG;
         }
         break;
     }
     case DATA_MSG : { // receive data package
         ret = NULL_MSG;
-        break;                
+        break;
     }
 
     case ACK_MSG : {
@@ -1001,8 +1002,8 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
         } else if (step_msg == END_STEP) {
             // what else can be send ?
             ret = NULL_MSG;
-        } 
-        break;               
+        }
+        break;
     }
     case ERR_MSG : {
         ret = NULL_MSG;
@@ -1010,11 +1011,11 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
     }
     case END_MSG : {
         ret = NULL_MSG;
-        break;          
+        break;
     }
     case RDY_MSG : {
         ret = NULL_MSG;
-        break;               
+        break;
     }
     case CHGB_MSG : {
         if (step_msg == CHKB_STEP) {
@@ -1029,12 +1030,12 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
             step_msg = CHKB_STEP;
             // send change burdrate package
             ret = CHGB_MSG;
-        } 
+        }
         break;
     }
-    default : 
-        break;    
-    }   
+    default :
+        break;
+    }
 
     return ret;
 }
@@ -1045,9 +1046,9 @@ unsigned char treat_receive_msg(unsigned char *buf, int len)
 * package the message which would be sent to uart
 * outbuf : point to the buf used to save the packaged message
 * outlen : the max length of the outbuf
-* inbuf  : point to the buf which saved the data of the 
+* inbuf  : point to the buf which saved the data of the
 *          message which should be sent to the uart
-* inlen  : the length of the data packaged 
+* inlen  : the length of the data packaged
 * t_msg  : type of the message which should be sent
 * return : the length of the packaged message
 ***********************************************************
@@ -1102,27 +1103,27 @@ int treat_send_msg(unsigned char *buf, int buflen, unsigned char t_msg)
 
     switch (t_msg) {
     case NULL_MSG : {
-        break;                 
+        break;
     }
     case START_MSG : {
         buf[0] = 0x7F;
         ret = 1;
-        break;                 
+        break;
     }
     case CHKB_MSG : {
-        ret = package_send_msg(buf, buflen, package_data_baudrate_chk, 6, CHKB_MSG); 
-        break;        
+        ret = package_send_msg(buf, buflen, package_data_baudrate_chk, 6, CHKB_MSG);
+        break;
     }
     case CHGB_MSG : {
         ret = package_send_msg(buf, buflen, package_data_baudrate_chg, 5, CHGB_MSG);
-        break;                
+        break;
     }
     case ACK_MSG : {
         ret = package_send_msg(buf, buflen, 0, 0, ACK_MSG);
-        break;               
+        break;
     }
     case RDY_MSG : {
-        ret = package_send_msg(buf, buflen, package_data_rdy, 1, RDY_MSG);               
+        ret = package_send_msg(buf, buflen, package_data_rdy, 1, RDY_MSG);
     }
     case DATA_MSG : {
         if (step_msg == LSTDATA_STEP) {
@@ -1135,7 +1136,7 @@ int treat_send_msg(unsigned char *buf, int buflen, unsigned char t_msg)
             tempbuf[3] = (unsigned char)(filelen - i);
             tempbuf[5] = 0x80;
             memcpy(&tempbuf[6], &filebuf[filelen - i], i);
-            i += 6;   
+            i += 6;
             ret = package_send_msg(buf, buflen, tempbuf, 0x86, DATA_MSG);
         } else if (step_msg == FSTDATA_STEP) {
             if ((fileoffset + 0x80) < filelen) {
@@ -1146,17 +1147,17 @@ int treat_send_msg(unsigned char *buf, int buflen, unsigned char t_msg)
                 memcpy(&tempbuf[6], &filebuf[fileoffset], 0x80);
                 fileoffset += 0x80;
                 ret = package_send_msg(buf, buflen, tempbuf, 0x86, DATA_MSG);
-            } 
+            }
         }
-        break;                
+        break;
     }
     case END_MSG : {
         ret = package_send_msg(buf, buflen, 0, 0, END_MSG);
-        break;               
+        break;
     }
     default :
         break;
-    
+
     }
 
     return ret;
@@ -1167,13 +1168,13 @@ int treat_send_msg(unsigned char *buf, int buflen, unsigned char t_msg)
 ***********************************************************
 * treat_msg
 * treat the message received from target system
-* outbuf : point to the buf used to save the message 
+* outbuf : point to the buf used to save the message
 *          which will be sent to the target
 * outlen : max size of the outbuf
-* inbuf  : point to the buf used to save the message 
+* inbuf  : point to the buf used to save the message
 *          received from the target
 * inlen  : the size of the message received from the target
-* plen   : point to the "unsigned int" buf used to save 
+* plen   : point to the "unsigned int" buf used to save
            the size of the message sent to the target
 * return : 0 : nothing to be done for uart
 *          1 : there is a message to be sent to the target
@@ -1187,8 +1188,8 @@ unsigned char treat_msg(unsigned char *outbuf, int outlen, unsigned char *inbuf,
     unsigned char sendmsgtype = NULL_MSG;
     unsigned char ret = 0;
 //static int i = 0;
-    *plen = 0;   
- 
+    *plen = 0;
+
     if (step_msg == END_STEP) {
         step_msg = NULL_STEP;
         return 4;
@@ -1197,8 +1198,8 @@ unsigned char treat_msg(unsigned char *outbuf, int outlen, unsigned char *inbuf,
     sendmsgtype = treat_receive_msg(inbuf, inlen);
     *plen = treat_send_msg(outbuf, (outlen), sendmsgtype);
     if (*plen > 0) ret = 1;
-    
-    if ((sendmsgtype == CHKB_MSG) || (sendmsgtype == CHGB_MSG)) ret = 2;  
+
+    if ((sendmsgtype == CHKB_MSG) || (sendmsgtype == CHGB_MSG)) ret = 2;
     if (sendmsgtype == DATA_MSG) ret = 3;
 
     return ret;
@@ -1213,11 +1214,11 @@ unsigned char treat_msg(unsigned char *outbuf, int outlen, unsigned char *inbuf,
 ***********************************************************
 */
 int input_file_msg(unsigned char *filename)
-{    
+{
     int fd = -1;
     int nread = 0;
     int i = 0;
-    
+
     fd = open(filename, O_RDONLY);
     if (fd < 0) {
         printf("opne bin file error\n");
@@ -1237,7 +1238,7 @@ int input_file_msg(unsigned char *filename)
         close(fd);
         for (i = 0; i < filelen; i ++) {
             if (!(i % 16)) printf("\n%04X: ", i);
-            printf("%02x ", filebuf[i]);    
+            printf("%02x ", filebuf[i]);
         }
         printf("\n");
         return filelen;

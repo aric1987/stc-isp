@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include "uart.h"
 
 
@@ -30,19 +31,19 @@ void printf_uart(unsigned char *buf, unsigned int len)
 /*
 ***********************************************************
 * open_uart
-* open the uart 
+* open the uart
 * prot:    the uart file name, like "/dev/ttyS0"
-* oldtio:  the struct termios to save the old setting 
+* oldtio:  the struct termios to save the old setting
 *          with uart
-* baud:    the baud rate to set to the uart, 
+* baud:    the baud rate to set to the uart,
 *          default is 9600
 * databit: the num of the data bits
 * stopbit: the num of the stop bits , can be 1 or 2
 * parity:  parity of the uart, 0 None, 1 Odd, 2 Even,
 *                              3 Make, 4 Space
-* flow:    flow of the uart, 0 None, 1 Hardware, 
+* flow:    flow of the uart, 0 None, 1 Hardware,
 *                            2 Software
-* return:  uart file description if success, 
+* return:  uart file description if success,
 *          or -1 if error
 ***********************************************************
 */
@@ -84,9 +85,9 @@ int open_uart(unsigned char *port, struct termios *oldtio, int baud, int databit
 			break;
 		case 9600:
 			termios_p.c_cflag =  B9600;
-			//cfsetispeed(&termios_p, B9600);  
-			//cfsetospeed(&termios_p, B9600); 
-			break; 
+			//cfsetispeed(&termios_p, B9600);
+			//cfsetospeed(&termios_p, B9600);
+			break;
 		case 19200:
 			termios_p.c_cflag =  B19200;
 			break;
@@ -103,7 +104,7 @@ int open_uart(unsigned char *port, struct termios *oldtio, int baud, int databit
 			termios_p.c_cflag =  B9600;
 			break;
 	}
-	
+
 	switch (databit) {
 		case 5:
 			termios_p.c_cflag |= CS5;
@@ -124,11 +125,11 @@ int open_uart(unsigned char *port, struct termios *oldtio, int baud, int databit
 	switch (parity) {
 		case 0:
 			termios_p.c_cflag &= ~PARENB; /* Clear parity enable */
-			termios_p.c_iflag &= ~INPCK; /* Enable parity checking */ 
+			termios_p.c_iflag &= ~INPCK; /* Enable parity checking */
 			break;
 		case 1:
 			termios_p.c_cflag |= (PARODD | PARENB); /* 设置为奇效验*/
-			//termios_p.c_iflag |= INPCK; /* Disnable parity checking */ 
+			//termios_p.c_iflag |= INPCK; /* Disnable parity checking */
 			break;
 		case 2:
 			termios_p.c_cflag |= PARENB; /* Enable parity */
@@ -137,18 +138,18 @@ int open_uart(unsigned char *port, struct termios *oldtio, int baud, int databit
 			break;
 		default:
 			//termios_p.c_cflag &= ~PARENB; /* Clear parity enable */
-			//termios_p.c_iflag &= ~INPCK; /* Enable parity checking */ 
+			//termios_p.c_iflag &= ~INPCK; /* Enable parity checking */
 			break;
 	}
 	switch (stopbit) {
 		case 1:
-			termios_p.c_cflag &= ~CSTOPB; 
+			termios_p.c_cflag &= ~CSTOPB;
 			break;
 		case 2:
-			termios_p.c_cflag |= CSTOPB; 
+			termios_p.c_cflag |= CSTOPB;
 			break;
 		default:
-			termios_p.c_cflag &= ~CSTOPB; 
+			termios_p.c_cflag &= ~CSTOPB;
 			break;
 	}
 	termios_p.c_cflag |= CREAD;
@@ -165,19 +166,19 @@ int open_uart(unsigned char *port, struct termios *oldtio, int baud, int databit
 			termios_p.c_cflag |= CLOCAL;
 			break;
 	}
-	
+
 	termios_p.c_oflag = 0;
 	termios_p.c_lflag = 0;
 	termios_p.c_cc[VTIME] = 0;
 	termios_p.c_cc[VMIN] = 1;
-	
+
 	tcsetattr(fd, TCSANOW, &termios_p);
-	tcflush(fd, TCOFLUSH);  
+	tcflush(fd, TCOFLUSH);
 	tcflush(fd, TCIFLUSH);
-	
+
     printf("Baudrate is %d\n\n", baud);
 
-    return fd;	
+    return fd;
 }
 
 /*
@@ -221,13 +222,13 @@ int read_uart(int fd, unsigned char *buf, unsigned int len)
     } else {
         memset(buf, 0, len);
     }
-    
+
     ret = read(fd, buf, len);
     if (ret < 0) {
         perror("read error:\n");
         return -1;
     }
-    
+
 //    if (uart_stat == 0) return -1;
 
     return ret;
@@ -250,11 +251,11 @@ int write_uart(int fd, unsigned char *buf, unsigned int len)
 
     for (i = 0; i < len; i ++) {
 	    while(tcdrain(fd) == -1);
-	    ret += write(fd, &buf[i], 1); 
+	    ret += write(fd, &buf[i], 1);
     }
-	
+
     if (ret < 0) perror("write:");
-    printf_uart(buf, len);    
+    printf_uart(buf, len);
 
 	return ret;
 }
@@ -271,16 +272,16 @@ int write_uart(int fd, unsigned char *buf, unsigned int len)
 int chgb_uart(int fd, unsigned int baud)
 {
     int ret = 0;
-	struct termios termios_p; 
+	struct termios termios_p;
     unsigned int baudrate = B9600;
-    
+
     if (fd == -1) {
         printf("change_baud error\n");
         return -1;
     }
 
     ret = tcgetattr(fd, &termios_p);
-    
+
     if (ret == -1){
         printf("tcgetattr error\n");
         return -1;
@@ -295,7 +296,7 @@ int chgb_uart(int fd, unsigned int baud)
 			break;
 		case 1200:
 			baudrate =  B1200;
-			//cfsetispeed(&termios_p, B1200);  
+			//cfsetispeed(&termios_p, B1200);
 			//cfsetospeed(&termios_p, B1200);
             break;
 		case 2400:
@@ -306,8 +307,8 @@ int chgb_uart(int fd, unsigned int baud)
 			break;
 		case 9600:
 			baudrate =  B9600;
-			//cfsetispeed(&termios_p, B9600);  
-			//cfsetospeed(&termios_p, B9600); 
+			//cfsetispeed(&termios_p, B9600);
+			//cfsetospeed(&termios_p, B9600);
 			break;
 		case 19200:
 			baudrate =  B19200;
@@ -325,20 +326,20 @@ int chgb_uart(int fd, unsigned int baud)
 			baudrate =  B9600;
 			break;
 	}
-    cfsetispeed(&termios_p, baudrate);  
+    cfsetispeed(&termios_p, baudrate);
     cfsetospeed(&termios_p, baudrate);
 
 
     while(tcdrain(fd) == -1);
-	
-    tcflush(fd, TCOFLUSH);  
+
+    tcflush(fd, TCOFLUSH);
 	tcflush(fd, TCIFLUSH);
 
 
 	tcsetattr(fd, TCSANOW, &termios_p);
 
     printf("Baudrate is %d\n\n", baud);
-    
+
     return 0;
 
 }
